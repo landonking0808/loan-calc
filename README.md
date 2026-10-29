@@ -28,9 +28,20 @@ npm run a11y    # axe-core WCAG 2.1 AA scan of index.html in headless Chromium
 
 Both run in GitHub Actions on every push (`.github/workflows/ci.yml`).
 
-## Cross-check
+## Cross-check (Thu Oct 29 2026, 10:41-10:51 AM CT)
 
-For $300,000 / 30 years / 6.5%, the result was compared against five public calculators (Bankrate, NerdWallet, Calculator.net, Zillow, CFPB or similar); see the proof notes in the King AI repository.
+Scenario: $300,000 loan, 30 years, 6.5% fixed (mortgage sites: $375,000 price, $75,000 down). Each site was opened in headless Chromium and screenshotted.
+
+| Source | Monthly P&I | Total interest | Agrees |
+|---|---|---|---|
+| This tool | $1,896.20 | $382,633.47 | - |
+| Calculator.net loan calculator | $1,896.20 | $382,633.47 | yes (exact) |
+| MortgageCalculator.org | $1,896.20 | $382,633.47 | yes (exact) |
+| NerdWallet mortgage calculator | $1,896 | $382,633 | yes (rounded) |
+| Bankrate mortgage calculator | $1,896 | not shown | yes (rounded) |
+| SmartAsset mortgage calculator | $1,896 | not shown | yes (rounded) |
+
+Zillow's calculator was attempted but blocked headless browsers with a "Press & Hold" bot check, so SmartAsset replaced it.
 
 Estimates only; not financial advice. Excludes taxes, insurance and PMI.
 
