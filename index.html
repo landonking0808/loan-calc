@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loan &amp; Mortgage Comparison Calculator</title>
+<meta name="description" content="Free fixed-rate loan and mortgage calculator: monthly payment, total interest, amortization table, and APR from fees. Built by King AI.">
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#16181d;--muted:#555b66;--line:#dfe2e7;--accent:#0b57d0;--accent-ink:#fff}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header,main,footer{max-width:960px;margin:0 auto;padding:0 20px}
+header{padding-top:32px}
+h1{font-size:1.75rem;margin:0 0 4px}
+header p{color:var(--muted);margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+section.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+h2{font-size:1.15rem;margin:0 0 12px}
+label{display:block;font-weight:600;font-size:.9rem;margin:10px 0 4px}
+input{width:100%;padding:10px 12px;font:inherit;border:1px solid #8a909a;border-radius:8px;background:#fff;color:var(--ink)}
+input:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.stat{background:var(--bg);border-radius:8px;padding:10px}
+.stat .k{font-size:.8rem;color:var(--muted)}
+.stat .v{font-size:1.25rem;font-weight:700;font-variant-numeric:tabular-nums}
+button{margin-top:14px;padding:10px 16px;font:inherit;font-weight:600;border:0;border-radius:8px;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.tablewrap{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:8px;margin-top:12px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.9rem}
+th,td{padding:6px 10px;text-align:right;border-bottom:1px solid var(--line)}
+th{position:sticky;top:0;background:#eef0f4}
+caption{text-align:left;padding:6px 10px;color:var(--muted)}
+footer{color:var(--muted);font-size:.85rem;padding:24px 20px 40px}
+a{color:var(--accent)}
+@media (max-width:520px){.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Loan &amp; Mortgage Comparison Calculator</h1>
+  <p>Fixed-rate loans: monthly payment, total interest, full amortization schedule, and the APR your fees really cost.</p>
+</header>
+<main>
+<div class="grid">
+<section class="card" aria-labelledby="pay-h">
+  <h2 id="pay-h">Payment</h2>
+  <form id="loan" novalidate>
+    <label for="amount">Loan amount ($)</label>
+    <input id="amount" name="amount" type="number" inputmode="decimal" min="1" step="any" value="300000">
+    <label for="years">Term (years)</label>
+    <input id="years" name="years" type="number" inputmode="numeric" min="1" max="50" step="1" value="30">
+    <label for="rate">Interest rate (% per year, fixed)</label>
+    <input id="rate" name="rate" type="number" inputmode="decimal" min="0" max="40" step="0.001" value="6.5">
+    <button type="submit">Calculate</button>
+  </form>
+  <div class="stats" aria-live="polite">
+    <div class="stat"><div class="k">Monthly payment</div><div class="v" id="out-pmt">–</div></div>
+    <div class="stat"><div class="k">Total interest</div><div class="v" id="out-int">–</div></div>
+    <div class="stat"><div class="k">Total paid</div><div class="v" id="out-tot">–</div></div>
+  </div>
+</section>
+<section class="card" aria-labelledby="apr-h">
+  <h2 id="apr-h">APR from fees</h2>
+  <p style="margin:0;color:var(--muted);font-size:.9rem">Uses the loan above. Upfront fees (origination, points, prepaid finance charges) lower the amount you really receive, so the effective rate (APR) is higher than the note rate.</p>
+  <label for="fees">Upfront fees ($)</label>
+  <input id="fees" type="number" inputmode="decimal" min="0" step="any" value="6000">
+  <div class="stats" aria-live="polite" style="grid-template-columns:1fr 1fr">
+    <div class="stat"><div class="k">APR</div><div class="v" id="out-apr">–</div></div>
+    <div class="stat"><div class="k">Amount financed</div><div class="v" id="out-fin">–</div></div>
+  </div>
+</section>
+</div>
+<section class="card" aria-labelledby="sched-h" style="margin-top:16px">
+  <h2 id="sched-h">Amortization schedule</h2>
+  <div class="tablewrap" tabindex="0" role="region" aria-label="Amortization table, scrollable">
+    <table>
+      <caption id="sched-cap">Monthly breakdown</caption>
+      <thead><tr><th scope="col">Month</th><th scope="col">Payment</th><th scope="col">Principal</th><th scope="col">Interest</th><th scope="col">Balance</th></tr></thead>
+      <tbody id="sched"></tbody>
+    </table>
+  </div>
+</section>
+</main>
+<footer>
+  Built end-to-end by King AI, an autonomous AI agent. Math is open source and unit-tested:
+  <a href="https://github.com/landonking-gif/loan-calc">github.com/landonking-gif/loan-calc</a>.
+  Estimates only; not financial advice. Excludes taxes, insurance and PMI.
+</footer>
+<script src="loan.js"></script>
+<script>
+(function(){
+  const $ = (id) => document.getElementById(id);
+  const usd = new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
+  function run(){
+    const P = parseFloat($('amount').value), yrs = parseFloat($('years').value), r = parseFloat($('rate').value);
+    const fees = parseFloat($('fees').value) || 0;
+    if (!(P > 0) || !(yrs > 0) || !(r >= 0)) { $('out-pmt').textContent = 'Check inputs'; return; }
+    const n = Math.round(yrs * 12);
+    const s = LoanMath.summary(P, r, n);
+    $('out-pmt').textContent = usd.format(s.payment);
+    $('out-int').textContent = usd.format(s.totalInterest);
+    $('out-tot').textContent = usd.format(s.totalPaid);
+    const apr = LoanMath.aprFromFees(P, r, n, fees);
+    $('out-apr').textContent = isFinite(apr) ? apr.toFixed(3) + '%' : '–';
+    $('out-fin').textContent = usd.format(P - fees);
+    const a = LoanMath.amortize(P, r, n);
+    $('sched-cap').textContent = n + ' payments; final payment adjusted for cent rounding';
+    $('sched').innerHTML = a.rows.map(x => '<tr><td>'+x.n+'</td><td>'+usd.format(x.payment)+'</td><td>'+usd.format(x.principal)+'</td><td>'+usd.format(x.interest)+'</td><td>'+usd.format(x.balance)+'</td></tr>').join('');
+  }
+  $('loan').addEventListener('submit', (e) => { e.preventDefault(); run(); });
+  ['amount','years','rate','fees'].forEach(id => $(id).addEventListener('input', run));
+  run();
+})();
+</script>
+</body>
+</html>

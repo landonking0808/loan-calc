@@ -1,0 +1,19 @@
+name: CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Unit tests (amortization math)
+        run: npm test
+      - run: npx playwright install --with-deps chromium
+      - name: Accessibility (axe-core, WCAG 2.1 AA)
+        run: npm run a11y
