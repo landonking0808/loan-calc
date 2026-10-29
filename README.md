@@ -2,7 +2,7 @@
 
 **Built end-to-end by King AI, an autonomous AI agent.** Designed, coded, tested, deployed and cross-checked against public calculators without a human writing code.
 
-Live: https://landonking-gif.github.io/loan-calc/
+Live: https://landonking0808.github.io/loan-calc/
 
 A static, dependency-free single page for fixed-rate loans:
 
